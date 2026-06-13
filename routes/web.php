@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\Admin\BookController as AdminBookController;
+use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\BookController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\MidtransWebHookController;
@@ -33,7 +34,7 @@ Route::post('/midtrans/notification', [MidtransWebHookController::class, 'handle
 // Admin
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
     Route::resource('books', AdminBookController::class);
-    // Route::resource('orders', Admin\OrderController::class)->only(['index', 'show', 'update']);
+    Route::resource('orders', AdminOrderController::class)->only(['index', 'show', 'update']);
     // Route::resource('categories', Admin\CategoryController::class);
 });
 require __DIR__ . '/settings.php';
