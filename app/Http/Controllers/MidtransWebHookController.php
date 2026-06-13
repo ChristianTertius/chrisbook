@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Book;
 use App\Models\Order;
 use App\Models\Payment;
+use App\Notifications\OrderPaidNotification;
 use App\Services\MidtransService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -33,24 +34,25 @@ class MidtransWebHookController extends Controller
                 'payment_type' => $payload['payment_type'] ?? null,
                 'raw_response' => $payload,
             ]);
+            // mapping status midtrans -> order
+            if (in_array($transactionStatus, ['settlement', 'capture']) && $fraudStatus !== 'challenge') {
+                $payment->update(['paid_at' => now()]);
+                $order->update(['status' => Order::STATUS_PAID]);
+
+                // buku sudah ditandai sold saat checkout; kirim email(queue)
+                // OrderPaidNotification dispatch disini
+                $order->user->notify(new OrderPaidNotification($order));
+            } elseif (in_array($transactionStatus, ['expire', 'cancel', 'deny'])) {
+                $order->update(['status' => Order::STATUS_CANCELLED]);
+                // kembalikan stock buku biar bisa di jual lagi
+                $order->items->each(function ($item) {
+                    if ($item->book) {
+                        $item->book->update(['status' => Book::STATUS_AVAILABLE]);
+                    }
+                });
+            }
         });
 
-        // mapping status midtrans -> order
-        if (in_array($transactionStatus, ['settlement', 'capture']) && $fraudStatus !== 'challenge') {
-            $payment->update(['paid_at' => now()]);
-            $order->update(['status' => Order::STATUS_PAID]);
-
-            // buku sudah ditandai sold saat checkout; kirim email(queue)
-            // OrderPaidNotification dispatch disini
-        } elseif (in_array($transactionStatus, ['expire', 'cancel', 'deny'])) {
-            $order->update(['status' => Order::STATUS_CANCELLED]);
-            // kembalikan stock buku biar bisa di jual lagi
-            $order->items->each(function ($item) {
-                if ($item->book) {
-                    $item->book->update(['status' => Book::STATUS_AVAILABLE]);
-                }
-            });
-        }
 
         return response()->json(['message' => 'ok',]);
     }
