@@ -13,7 +13,30 @@ declare module '@inertiajs/core' {
             name: string;
             auth: Auth;
             sidebarOpen: boolean;
+            flash?: Flash;
             [key: string]: unknown;
+        };
+    }
+}
+
+export interface Flash {
+    success?: string;
+    snap_token?: string;
+    [key: string]: unknown;
+}
+
+declare global {
+    interface Window {
+        snap: {
+            pay(
+                token: string,
+                options: {
+                    onSuccess: () => void;
+                    onPending: () => void;
+                    onError: () => void;
+                    onClose: () => void;
+                },
+            ): void;
         };
     }
 }
