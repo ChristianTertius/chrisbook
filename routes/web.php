@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\Admin\BookController as AdminBookController;
+use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\BookController;
 use App\Http\Controllers\CheckoutController;
@@ -11,9 +12,9 @@ use Illuminate\Support\Facades\Route;
 
 Route::inertia('/', 'welcome')->name('home');
 
-Route::middleware(['auth', 'verified'])->group(function () {
-    Route::inertia('dashboard', 'dashboard')->name('dashboard');
-});
+// Route::middleware(['auth', 'verified'])->group(function () {
+//     Route::inertia('dashboard', 'dashboard')->name('dashboard');
+// });
 
 // Publik
 Route::get('/', [BookController::class, 'index']);
@@ -35,6 +36,8 @@ Route::post('/midtrans/notification', [MidtransWebHookController::class, 'handle
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
     Route::resource('books', AdminBookController::class);
     Route::resource('orders', AdminOrderController::class)->only(['index', 'show', 'update']);
+    Route::get('/dashboard', DashboardController::class)->name('dashboard');
+
     // Route::resource('categories', Admin\CategoryController::class);
 });
 require __DIR__ . '/settings.php';
