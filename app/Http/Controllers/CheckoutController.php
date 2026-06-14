@@ -6,16 +6,55 @@ use App\Models\Book;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Services\MidtransService;
+use App\Services\ShippingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
+use Inertia\Inertia;
 
 class CheckoutController extends Controller
 {
+
+    public function create(Request $request, ShippingService $shipping)
+    {
+        $user = $request->user();
+        $cart = $user->cart()->with('items.book')->first();
+
+        if (! $cart || $cart->items->isEmpty()) {
+            return redirect('/cart')->with('error', 'Keranjang Kosong');
+        }
+
+        // ongkir dihitung hanya kalau frontend mengirim address_id + courier lewat
+        // router.reload partial. Saat halama pertama dibuka, options masih kosong
+        $shippingOptions = [];
+
+        if ($request->filled('address_id') && $request->filled('courier')) {
+            $address = $user->addresses()->find($request->address_id);
+            if ($address?->city_id) {
+                $weight = $cart->items->count() * ShippingService::DEFAULT_WEIGHT_PER_ITEM;
+                $shippingOptions = $shipping->cost($address->city_id, $weight, $request->courier);
+            }
+        }
+
+        return Inertia::render('Checkout', [
+            'items' => $cart->items->map(fn($item) => [
+                'id' => $item->id,
+                'title' => $item->book->title,
+                'price' => $item->price,
+                'qty' => $item->qty,
+            ]),
+            'subtotal' => $cart->subtotal(),
+            'addresses' => $user->addresses()->orderByDesc('is_default')->latest()->get(),
+            'shippingOptions' => $shippingOptions,
+        ]);
+    }
+
     public function store(Request $request, MidtransService $midtrans)
     {
         $data = $request->validate([
-            'address' => ['required', 'array'],
+            'address_id' => ['required', Rule::exists('address', 'id')->where('user_id', Auth::id())],
+            'courier' => ['required', 'string', 'max:50'],
             'shipping_cost' => ['required', 'integer', 'min:0'],
         ]);
 
@@ -43,15 +82,24 @@ class CheckoutController extends Controller
 
             $subtotal = $cart->items->sum(fn($item) => $item->price * $item->qty);
             $total = $subtotal + $data['shipping_cost'];
+            $address = $user->addresses()->findOrFail($data['address_id']);
 
             $order = Order::create([
                 'user_id' => $user->id,
                 'order_number' => 'INV-' . now()->format('Ymd') . '-' . strtoupper(uniqid()),
                 'status' => Order::STATUS_PENDING,
                 'subtotal' => $subtotal,
+                'courier' => $data['courier'],
                 'shipping_cost' => $data['shipping_cost'],
-                'total' => $total,
-                'shipping_address' => $data['address'],
+                'total' => $subtotal + $data['shipping_cost'],
+                'shipping_address' => $address->only([
+                    'recipient',
+                    'phone',
+                    'province',
+                    'city',
+                    'postal_code',
+                    'full_address'
+                ]),
             ]);
 
             foreach ($cart->items as $item) {

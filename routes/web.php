@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AddressController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\Admin\BookController as AdminBookController;
 use App\Http\Controllers\Admin\CategoryController;
@@ -9,6 +10,7 @@ use App\Http\Controllers\BookController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\MidtransWebHookController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\ShippingController;
 use Illuminate\Support\Facades\Route;
 
 Route::inertia('/', 'welcome')->name('home');
@@ -28,6 +30,16 @@ Route::middleware('auth')->group(function () {
     Route::post('/checkout', [CheckoutController::class, 'store']);
     Route::get('/orders', [OrderController::class, 'index']);
     Route::get('/orders/{order}', [OrderController::class, 'show']);
+
+    Route::resource('addresses', AddressController::class)
+        ->only(['index', 'store', 'update', 'destroy']);
+    Route::post('/addresses/{address}/default', [AddressController::class, 'setDefault'])
+        ->name('addresses.default');
+
+    // Ongkir (auth)
+    Route::get('/shipping/provinces', [ShippingController::class, 'provinces']);
+    Route::get('/shipping/cities', [ShippingController::class, 'cities']);
+    Route::post('/shipping/cost', [ShippingController::class, 'cost']);
 });
 
 // Webhook Midtrans (tanpa CSRF, tanpa auth)
