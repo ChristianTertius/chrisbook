@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\Admin\BookController as AdminBookController;
+use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\BookController;
@@ -38,6 +39,6 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
     Route::resource('orders', AdminOrderController::class)->only(['index', 'show', 'update']);
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
 
-    // Route::resource('categories', Admin\CategoryController::class);
+    Route::resource('categories', CategoryController::class)->only(['index', 'store', 'update', 'destroy']);
 });
 require __DIR__ . '/settings.php';
