@@ -15,24 +15,37 @@ class CheckoutController extends Controller
     public function store(Request $request, MidtransService $midtrans)
     {
         $data = $request->validate([
-            'book_id' => ['required', 'exists:books, id'],
             'address' => ['required', 'array'],
             'shipping_cost' => ['required', 'integer', 'min:0'],
         ]);
 
-        $order = DB::transaction(function () use ($data) {
-            // lock baris buku biar nggak kebeli barengnan(race condition)
-            $book = Book::where('id',  $data['book_id'])
+        $user = Auth::user();
+
+        $order = DB::transaction(function () use ($user, $data) {
+            // ambil cart + item ; lock biar nggak ada perubahan barengan
+            $cart = $user->cart()->with('items.book')->lockForUpdate()->firstOrFail();
+            abort_if($cart->items->isEmpty(), 422, 'Keranjang Kosong!');
+
+            // lock semua baris sekaligus, lalu validasi ketersediaan
+            $books = Book::whereIn('id', $cart->items->pluck('book_id'))
                 ->lockForUpdate()
-                ->firstOrFail();
+                ->get()
+                ->keyBy('id');
 
-            abort_if($book->status !== Book::STATUS_AVAILABLE || $book->stock < 1, 409, 'Buku sudah tidak tersedia!');
+            foreach ($cart->items as $item) {
+                $book = $books[$item->book_id] ?? null;
+                abort_if(
+                    ! $book || $book->status !== Book::STATUS_AVAILABLE || $book->stock < 1,
+                    409,
+                    "Buku \"{$item->book?->title}\" sudah tidak tersedia."
+                );
+            }
 
-            $subtotal = $book->price;
+            $subtotal = $cart->items->sum(fn($item) => $item->price * $item->qty);
             $total = $subtotal + $data['shipping_cost'];
 
             $order = Order::create([
-                'user_id' => Auth::id(),
+                'user_id' => $user->id,
                 'order_number' => 'INV-' . now()->format('Ymd') . '-' . strtoupper(uniqid()),
                 'status' => Order::STATUS_PENDING,
                 'subtotal' => $subtotal,
@@ -41,15 +54,21 @@ class CheckoutController extends Controller
                 'shipping_address' => $data['address'],
             ]);
 
-            $order->items()->create([
-                'book_id' => $book->id,
-                'title' => $book->title,
-                'qty' => 1,
-                'price' => $book->price,
-            ]);
+            foreach ($cart->items as $item) {
+                $order->items()->create([
+                    'book_id' => $item->book_id,
+                    'title' => $item->book->title, // snapshot judul
+                    'qty' => $item->qty,
+                    'price' => $item->price,
+                ]);
 
-            // tandai buku sedang di proses (hindari double buy saat pending)
-            $book->update(['status' => Book::STATUS_SOLD]);
+                // kunci buku biar nggak kebeli dua kali
+                $books[$item->book_id]->update(['status' => Book::STATUS_SOLD]);
+            }
+
+            // kosongkan cart setelah jadi order
+            $cart->items()->delete();
+
             return $order;
         });
 

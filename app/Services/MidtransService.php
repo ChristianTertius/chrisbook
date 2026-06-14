@@ -21,6 +21,24 @@ class MidtransService
     // minta snap token untuk sebuah order
     public function createSnapToken($order): string
     {
+        $items = $order->items->map(fn($item) => [
+            'id' => (string) $item->book_id,
+            'price' => $item->price,
+            'quantity' => $item->qty,
+            'name' => mb_substr($item->title, 0, 50),
+
+        ])->toArray();
+
+        // baris ongkir biar sum(items_details) === grod_amount
+        if ($order->shipping_cost > 0) {
+            $items[] = [
+                'id' => 'SHIPPING',
+                'price' => $order->shipping_cost,
+                'quantity' => 1,
+                'name' => 'Ongkir',
+            ];
+        }
+
         $params = [
             'transaction_details' => [
                 'order_id' => $order->order_number,
@@ -31,13 +49,9 @@ class MidtransService
                 'email' => $order->user->email,
                 'phone' => $order->user->phone,
             ],
-            'item_details' => $order->items->map(fn($item) => [
-                'id' => $item->product->id,
-                'price' => $item->price,
-                'quantity' => $item->quantity,
-                'name' => mb_substr($item->title, 0, 50),
-            ])->toArray(),
+            'item_details' => $items,
         ];
+
         return Snap::getSnapToken($params);
     }
 
