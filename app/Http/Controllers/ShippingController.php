@@ -7,7 +7,6 @@ use Illuminate\Http\Request;
 
 class ShippingController extends Controller
 {
-
     public function __construct(private ShippingService $shipping) {}
 
     public function provinces()
@@ -27,7 +26,7 @@ class ShippingController extends Controller
         $data = $request->validate([
             'destination_city_id' => ['required'],
             'weight' => ['required', 'integer', 'min:1'],
-            'courier' => ['required', 'string']
+            'courier' => ['required', 'string'],
         ]);
 
         return response()->json($this->shipping->cost($data['destination_city_id'], $data['weight'], $data['courier']));

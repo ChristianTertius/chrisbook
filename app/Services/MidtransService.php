@@ -21,7 +21,7 @@ class MidtransService
     // minta snap token untuk sebuah order
     public function createSnapToken($order): string
     {
-        $items = $order->items->map(fn($item) => [
+        $items = $order->items->map(fn ($item) => [
             'id' => (string) $item->book_id,
             'price' => $item->price,
             'quantity' => $item->qty,
@@ -61,9 +61,9 @@ class MidtransService
         $expected = hash(
             'sha512',
             $payload['order_id']
-                . $payload['status_code']
-                . $payload['gross_amount']
-                . config('services.midtrans.server_key')
+                .$payload['status_code']
+                .$payload['gross_amount']
+                .config('services.midtrans.server_key')
         );
 
         return hash_equals($expected, $payload['signature_key'] ?? '');

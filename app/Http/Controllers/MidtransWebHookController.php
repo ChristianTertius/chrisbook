@@ -17,7 +17,7 @@ class MidtransWebHookController extends Controller
         $payload = $request->all();
 
         // verifikasi signature, tolak kalo palsu
-        if (!$midtrans->isValidSignature($payload)) {
+        if (! $midtrans->isValidSignature($payload)) {
             abort(403, 'invalid signature');
         }
 
@@ -53,7 +53,6 @@ class MidtransWebHookController extends Controller
             }
         });
 
-
-        return response()->json(['message' => 'ok',]);
+        return response()->json(['message' => 'ok']);
     }
 }

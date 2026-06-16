@@ -17,7 +17,7 @@ class AddressController extends Controller
     public function index()
     {
         return Inertia::render('Address/Index', [
-            'addresses' => Auth::user()->addresses()->orderByDesc('is_default')->latest()->get()
+            'addresses' => Auth::user()->addresses()->orderByDesc('is_default')->latest()->get(),
         ]);
     }
 
@@ -47,7 +47,7 @@ class AddressController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(AddressRequest  $request, Address $address)
+    public function update(AddressRequest $request, Address $address)
     {
         $this->authorizeOwner($address);
         $data = $request->validated();

@@ -4,12 +4,12 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\BookRequest;
-use Illuminate\Support\Str;
 use App\Models\Book;
 use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 
 class BookController extends Controller
@@ -21,15 +21,13 @@ class BookController extends Controller
     {
         return Inertia::render('admin/books/index', [
             'books' => Book::with(['category', 'images'])
-                ->when($request->search, fn($q, $s) =>
-                $q->where(fn($q) =>
-                $q->where('title', 'like', "%{$s}%")
+                ->when($request->search, fn ($q, $s) => $q->where(fn ($q) => $q->where('title', 'like', "%{$s}%")
                     ->orWhere('author', 'like', "%{$s}%")))
                 ->latest()
                 ->paginate(15)
                 ->withQueryString(),
             'categories' => Category::orderBy('name')->get(['id', 'name']),
-            'filters' => $request->only('search')
+            'filters' => $request->only('search'),
         ]);
     }
 
@@ -160,8 +158,8 @@ class BookController extends Controller
         $slug = $base;
         $n = 1;
 
-        while (Book::where('slug', $slug)->when($ignoreId, fn($q) => $q->where('id', '!=', $ignoreId))->exists()) {
-            $slug = $base . '-' . $n++;
+        while (Book::where('slug', $slug)->when($ignoreId, fn ($q) => $q->where('id', '!=', $ignoreId))->exists()) {
+            $slug = $base.'-'.$n++;
         }
 
         return $slug;

@@ -7,12 +7,13 @@ use Illuminate\Support\Facades\Http;
 
 class ShippingService
 {
-
     // asumsi berat default per buku (gram); idealnya pakai kolom books.weight
     public const DEFAULT_WEIGHT_PER_ITEM = 10;
 
     private string $baseUrl;
+
     private string $apiKey;
+
     private string $originCityId;
 
     /**
@@ -33,14 +34,13 @@ class ShippingService
     // daftar provinsi(di cache, jarang berubah)
     public function provinces(): array
     {
-        return Cache::remember('ongkir.provinces', now()->addDay(), fn() => $this->client()->get('/destination/province')->json('data', []));
+        return Cache::remember('ongkir.provinces', now()->addDay(), fn () => $this->client()->get('/destination/province')->json('data', []));
     }
 
     // daftar kota per provinsi
     public function cities(string $provinceId): array
     {
-        return Cache::remember("ongkir.cities.{$provinceId}", now()->addDay(), fn() =>
-        $this->client()->get('/destination/city', ['province_id' => $provinceId])->json('data', []));
+        return Cache::remember("ongkir.cities.{$provinceId}", now()->addDay(), fn () => $this->client()->get('/destination/city', ['province_id' => $provinceId])->json('data', []));
     }
 
     // hitung ongkir, balikin daftar layanan + biaya per kurir

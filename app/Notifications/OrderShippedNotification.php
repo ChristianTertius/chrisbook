@@ -4,7 +4,6 @@ namespace App\Notifications;
 
 use App\Models\Order;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
@@ -33,13 +32,14 @@ class OrderShippedNotification extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         $order = $this->order;
+
         return (new MailMessage)
             ->subject("Pesanan telah dikirim - {$order->order_number}")
             ->greeting("Halo {$notifiable->name},")
             ->line("Pesanan {$order->order_number} sudah kami kirim")
             ->line("Kurir: {$order->courier}")
             ->line("Nomor Resi: {$order->tracking_number}")
-            ->action("Lacak Pesanan: ", url('/orders/' . $order->id));
+            ->action('Lacak Pesanan: ', url('/orders/'.$order->id));
     }
 
     /**

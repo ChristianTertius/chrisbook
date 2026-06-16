@@ -24,6 +24,7 @@ class BookRequest extends FormRequest
     public function rules(): array
     {
         $bookId = $this->route('book')?->id;
+
         return [
             'category_id' => ['nullable', 'exists:categories,id'],
             'title' => ['required', 'string', 'max:255'],

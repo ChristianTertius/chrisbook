@@ -7,6 +7,7 @@ use App\Models\Book;
 use App\Models\Order;
 use App\Models\OrderItem;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class DashboardController extends Controller
@@ -16,10 +17,10 @@ class DashboardController extends Controller
 
     public function __invoke(Request $request)
     {
-        return Inertia::render('Admin/Dashboard', [
+        return Inertia::render('admin/dashboard', [
             'cards' => $this->cards(),
             'salesChart' => $this->salesChart(),
-            'topBook' => $this->topBook(),
+            'topBooks' => $this->topBook(),
             'lowStock' => $this->lowStock(),
             'recentOrders' => Order::with('user')->latest()->limit(8)->get(),
         ]);
@@ -43,14 +44,17 @@ class DashboardController extends Controller
         ];
     }
 
-
     // pendapatna dan jumlah order 12 bulan terakhir, untuk grafik
-    public function index(): array
+    private function salesChart(): array
     {
+        $dateFormat = DB::connection()->getDriverName() === 'mysql'
+            ? "DATE_FORMAT(created_at, '%Y-%m')"
+            : "strftime('%Y-%m', created_at)";
+
         return Order::query()
-            ->whereIn("status", self::PAID_STATUSES)
+            ->whereIn('status', self::PAID_STATUSES)
             ->where('created_at', '>=', now()->subMonths(11)->startOfMonth())
-            ->selectRaw("DATE_FORMAT(created_at, '%Y-%m') as month")
+            ->selectRaw("{$dateFormat} as month")
             ->selectRaw('SUM(total) as revenue')
             ->selectRaw('COUNT(*) as orders')
             ->groupBy('month')
@@ -75,7 +79,7 @@ class DashboardController extends Controller
     }
 
     // buku yg stock menipis
-    function lowStock(): array
+    public function lowStock(): array
     {
         return Book::query()
             ->where('status', 'available')

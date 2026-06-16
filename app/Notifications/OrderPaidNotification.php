@@ -4,7 +4,6 @@ namespace App\Notifications;
 
 use App\Models\Order;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
@@ -40,15 +39,15 @@ class OrderPaidNotification extends Notification
             ->subject("Pembayaran diterima - {$order->order_number}")
             ->greeting("Halo {$notifiable->name},")
             ->line("Pembayaran untuk pesanan {$order->order_number} sudah kami terima. Terima Kasih")
-            ->line("Ringkasan pesanan:");
+            ->line('Ringkasan pesanan:');
 
         foreach ($order->items as $item) {
-            $mail->line("• {$item->title} — Rp" . number_format($item->price, 0, ',', '.'));
+            $mail->line("• {$item->title} — Rp".number_format($item->price, 0, ',', '.'));
         }
 
         return $mail
-            ->line('Total: Rp' . number_format($order->total, 0, ',', '.'))
-            ->action('Lihat Pesanan', url('/orders/' . $order->id))
+            ->line('Total: Rp'.number_format($order->total, 0, ',', '.'))
+            ->action('Lihat Pesanan', url('/orders/'.$order->id))
             ->line('Pesananmu akan segera kami proses untuk pengiriman.');
     }
 

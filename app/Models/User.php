@@ -36,6 +36,7 @@ class User extends Authenticatable implements PasskeyUser
     use HasFactory, Notifiable, PasskeyAuthenticatable;
 
     protected $fillable = ['name', 'email', 'password', 'role', 'phone'];
+
     protected $hidden = ['password', 'remember_token'];
 
     /**

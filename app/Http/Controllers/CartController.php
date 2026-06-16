@@ -43,7 +43,7 @@ class CartController extends Controller
             [
                 'qty' => 1,
                 'price' => $book->price,
-            ]
+            ],
         ]);
 
         return back()->with('success', 'Book added to cart successfully.');

@@ -15,7 +15,6 @@ use Inertia\Inertia;
 
 class CheckoutController extends Controller
 {
-
     public function create(Request $request, ShippingService $shipping)
     {
         $user = $request->user();
@@ -38,7 +37,7 @@ class CheckoutController extends Controller
         }
 
         return Inertia::render('Checkout', [
-            'items' => $cart->items->map(fn($item) => [
+            'items' => $cart->items->map(fn ($item) => [
                 'id' => $item->id,
                 'title' => $item->book->title,
                 'price' => $item->price,
@@ -80,13 +79,13 @@ class CheckoutController extends Controller
                 );
             }
 
-            $subtotal = $cart->items->sum(fn($item) => $item->price * $item->qty);
+            $subtotal = $cart->items->sum(fn ($item) => $item->price * $item->qty);
             $total = $subtotal + $data['shipping_cost'];
             $address = $user->addresses()->findOrFail($data['address_id']);
 
             $order = Order::create([
                 'user_id' => $user->id,
-                'order_number' => 'INV-' . now()->format('Ymd') . '-' . strtoupper(uniqid()),
+                'order_number' => 'INV-'.now()->format('Ymd').'-'.strtoupper(uniqid()),
                 'status' => Order::STATUS_PENDING,
                 'subtotal' => $subtotal,
                 'courier' => $data['courier'],
@@ -98,7 +97,7 @@ class CheckoutController extends Controller
                     'province',
                     'city',
                     'postal_code',
-                    'full_address'
+                    'full_address',
                 ]),
             ]);
 

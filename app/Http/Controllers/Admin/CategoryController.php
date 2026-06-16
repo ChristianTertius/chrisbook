@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers\Admin;
 
-use Illuminate\Support\Str;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CategoryRequest;
 use App\Models\Category;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 
 class CategoryController extends Controller
@@ -19,12 +19,13 @@ class CategoryController extends Controller
         $search = $request->string('search')->toString();
         $categories = Category::query()
             ->withCount('books')
-            ->when($search, fn($q) => $q->where('name', 'like', "%{$search}%"))
+            ->when($search, fn ($q) => $q->where('name', 'like', "%{$search}%"))
             ->orderBy('name')
             ->get();
+
         return Inertia::render('admin/categories/index', [
             'categories' => $categories,
-            'filters' => ['search' => $search]
+            'filters' => ['search' => $search],
         ]);
     }
 
@@ -37,6 +38,7 @@ class CategoryController extends Controller
         $data['slug'] = $this->uniqueSlug($data['name']);
 
         Category::create($data);
+
         return back()->with('success', 'Category created successfully.');
     }
 
@@ -64,6 +66,7 @@ class CategoryController extends Controller
     {
         // kalo cateogry di hapus, bku terkait jadi tanpa kategori
         $category->delete();
+
         return back()->with('success', 'Category deleted successfully.');
     }
 
@@ -74,10 +77,10 @@ class CategoryController extends Controller
         $n = 1;
 
         while (Category::where('slug', $slug)
-            ->when($ignoreId, fn($q) => $q->where('id', '!=', $ignoreId))
+            ->when($ignoreId, fn ($q) => $q->where('id', '!=', $ignoreId))
             ->exists()
         ) {
-            $slug = $base . '-' . $n++;
+            $slug = $base.'-'.$n++;
         }
 
         return $slug;

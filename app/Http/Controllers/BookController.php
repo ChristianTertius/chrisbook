@@ -14,11 +14,11 @@ class BookController extends Controller
         $books = Book::query()
             ->available()
             ->with('category')
-            ->when($request->search, fn($q, $s) => $q->where(fn($q) => $q->where('title', 'like', "%{$s}%")->orWhere('author', 'like', "%{$s}%")))
-            ->when($request->category, fn($q, $c) => $q->whereHas('category', fn($q) => $q->where('slug', $c)))
-            ->when($request->condition, fn($q, $c) => $q->where('condition', $c))
-            ->when($request->min_price, fn($q, $p) => $q->where('price', '>=', $p))
-            ->when($request->max_price, fn($q, $p) => $q->where('price', '<=', $p))
+            ->when($request->search, fn ($q, $s) => $q->where(fn ($q) => $q->where('title', 'like', "%{$s}%")->orWhere('author', 'like', "%{$s}%")))
+            ->when($request->category, fn ($q, $c) => $q->whereHas('category', fn ($q) => $q->where('slug', $c)))
+            ->when($request->condition, fn ($q, $c) => $q->where('condition', $c))
+            ->when($request->min_price, fn ($q, $p) => $q->where('price', '>=', $p))
+            ->when($request->max_price, fn ($q, $p) => $q->where('price', '<=', $p))
             ->latest()
             ->paginate(12)
             ->withQueryString();
@@ -36,10 +36,10 @@ class BookController extends Controller
 
         return Inertia::render('Book', [
             'book' => $book,
-            'ralated' => Book::available()
+            'related' => Book::available()
                 ->where('category_id', $book->category_id)
                 ->where('id', '!=', $book->id)
-                ->limit(4)
+                ->limit(4),
         ]);
     }
 }

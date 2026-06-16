@@ -17,7 +17,7 @@ class Address extends Model
         'city',
         'postal_code',
         'full_address',
-        'is_default'
+        'is_default',
     ];
 
     protected $casts = [

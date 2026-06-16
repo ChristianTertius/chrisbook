@@ -16,6 +16,7 @@ class EnsureUserIsAdmin
     public function handle(Request $request, Closure $next): Response
     {
         abort_unless($request->user() && $request->user()->isAdmin(), 403);
+
         return $next($request);
     }
 }

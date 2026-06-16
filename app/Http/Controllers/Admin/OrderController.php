@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\OrderStatusRequest;
-use App\Notifications\OrderShippedNotification;
 use App\Models\Order;
+use App\Notifications\OrderShippedNotification;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -24,11 +24,9 @@ class OrderController extends Controller
     {
         $orders = Order::query()
             ->with(['user', 'payment'])
-            ->when($request->status, fn($q, $s) => $q->where('status', $s))
-            ->when($request->search, fn($q, $s) =>
-            $q->where(fn($q) =>
-            $q->where('order_number', 'like', "%{$s}%")
-                ->orWhereHas('user', fn($q) => $q->where('name', 'like', "%{$s}%"))))
+            ->when($request->status, fn ($q, $s) => $q->where('status', $s))
+            ->when($request->search, fn ($q, $s) => $q->where(fn ($q) => $q->where('order_number', 'like', "%{$s}%")
+                ->orWhereHas('user', fn ($q) => $q->where('name', 'like', "%{$s}%"))))
             ->latest()
             ->paginate(20)
             ->withQueryString();
@@ -59,7 +57,6 @@ class OrderController extends Controller
         $data = $request->validated();
         $newStatus = $data['status'];
 
-
         // tolak transisi status yg tidak valid
         $allowed = self::TRANSITIONS[$order->status] ?? [];
         abort_unless(in_array($newStatus, $allowed), 422, "Transisi {$order->status} -> {$newStatus} tidak diizinkan");
@@ -74,6 +71,7 @@ class OrderController extends Controller
         if ($newStatus == 'shipped') {
             $order->user->notify(new OrderShippedNotification($order));
         }
+
         return back()->with('success', "Status pesanan diperbarui jadi {$newStatus}.");
     }
 }

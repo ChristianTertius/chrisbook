@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Book extends Model
 {
     public const STATUS_AVAILABLE = 'available';
+
     public const STATUS_SOLD = 'sold';
 
     protected $fillable = [
@@ -23,7 +24,7 @@ class Book extends Model
         'price',
         'stock',
         'status',
-        'cover_image'
+        'cover_image',
     ];
 
     protected $casts = [
