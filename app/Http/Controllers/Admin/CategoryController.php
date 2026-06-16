@@ -14,11 +14,17 @@ class CategoryController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        return Inertia::render('Admin/Categories/Index', [
-            // withCount biar tau berapa banyak buku per ketegory (buat info hapus)
-            'categories' => Category::withCount('books')->orderBy('name')->get(),
+        $search = $request->string('search')->toString();
+        $categories = Category::query()
+            ->withCount('books')
+            ->when($search, fn($q) => $q->where('name', 'like', "%{$search}%"))
+            ->orderBy('name')
+            ->get();
+        return Inertia::render('admin/categories/index', [
+            'categories' => $categories,
+            'filters' => ['search' => $search]
         ]);
     }
 

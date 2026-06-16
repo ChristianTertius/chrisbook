@@ -1,5 +1,5 @@
 import { Link } from '@inertiajs/react';
-import { Book, BookOpen, FolderGit2, LayoutGrid } from 'lucide-react';
+import { Book, BookOpen, FolderGit2, IceCream2, LayoutGrid, List } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
@@ -23,23 +23,27 @@ const mainNavItems: NavItem[] = [
         icon: LayoutGrid,
     },
     {
-        title: 'Books',
-        href: '/admin/books',
+        title: 'Book',
+        href: '/admin/categories',
         icon: BookOpen,
+        children: [
+            { title: 'Book Lists', href: '/admin/books', icon: BookOpen },
+            { title: 'Book Categories', href: '/admin/categories', icon: IceCream2 },
+        ]
     },
 ];
 
 const footerNavItems: NavItem[] = [
-    {
-        title: 'Repository',
-        href: 'https://github.com/laravel/react-starter-kit',
-        icon: FolderGit2,
-    },
-    {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits#react',
-        icon: BookOpen,
-    },
+    // {
+    //     title: 'Repository',
+    //     href: 'https://github.com/laravel/react-starter-kit',
+    //     icon: FolderGit2,
+    // },
+    // {
+    //     title: 'Documentation',
+    //     href: 'https://laravel.com/docs/starter-kits#react',
+    //     icon: BookOpen,
+    // },
 ];
 
 export function AppSidebar() {
