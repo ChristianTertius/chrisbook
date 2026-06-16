@@ -15,12 +15,12 @@ use Illuminate\Support\Facades\Route;
 
 Route::inertia('/', 'welcome')->name('home');
 
-// Route::middleware(['auth', 'verified'])->group(function () {
-//     Route::inertia('dashboard', 'dashboard')->name('dashboard');
-// });
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::inertia('dashboard', 'dashboard')->name('dashboard');
+});
 
 // Publik
-Route::get('/', [BookController::class, 'index']);
+// Route::get('/', [BookController::class, 'index']);
 Route::get('/books/{slug}', [BookController::class, 'show']);
 
 // Customer (auth)
@@ -46,10 +46,10 @@ Route::middleware('auth')->group(function () {
 Route::post('/midtrans/notification', [MidtransWebHookController::class, 'handle']);
 
 // Admin
-Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
+Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::resource('books', AdminBookController::class);
     Route::resource('orders', AdminOrderController::class)->only(['index', 'show', 'update']);
-    Route::get('/dashboard', DashboardController::class)->name('dashboard');
+    // Route::get('/dashboard', DashboardController::class)->name('dashboard');
 
     Route::resource('categories', CategoryController::class)->only(['index', 'store', 'update', 'destroy']);
 });

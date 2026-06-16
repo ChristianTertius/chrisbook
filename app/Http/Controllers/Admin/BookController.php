@@ -7,6 +7,7 @@ use App\Http\Requests\BookRequest;
 use Illuminate\Support\Str;
 use App\Models\Book;
 use App\Models\Category;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
@@ -16,13 +17,19 @@ class BookController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        return Inertia::render('Admin/Books/Index', [
-            'books' => Book::with('category')
+        return Inertia::render('admin/books/index', [
+            'books' => Book::with(['category', 'images'])
+                ->when($request->search, fn($q, $s) =>
+                $q->where(fn($q) =>
+                $q->where('title', 'like', "%{$s}%")
+                    ->orWhere('author', 'like', "%{$s}%")))
                 ->latest()
                 ->paginate(15)
-                ->withQueryString()
+                ->withQueryString(),
+            'categories' => Category::orderBy('name')->get(['id', 'name']),
+            'filters' => $request->only('search')
         ]);
     }
 
