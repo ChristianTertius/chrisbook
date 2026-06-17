@@ -97,6 +97,6 @@ class CartController extends Controller
         abort_unless($item->cart->user_id == Auth::id(), 403);
         $item->delete();
 
-        return back()->with('success', 'Buku dihapus di keranjang');
+        return back()->with('success', 'Buku dihapus dari keranjang');
     }
 }

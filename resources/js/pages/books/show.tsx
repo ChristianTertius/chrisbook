@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import PublicNavbar from '@/components/public-navbar';
 import PublicFooter from '@/components/public-footer';
+import SessionFlashWatcher from '@/components/session-flash-watcher';
 export interface BookImage {
   id: number;
   path: string; // path file (storage), mis. 'books/abc.jpg'
@@ -77,7 +78,6 @@ export default function Show({
       { book_id: book.id },
       {
         preserveScroll: true,
-        onSuccess: () => toast.success('Buku ditambahkan ke keranjang'),
         onError: () => toast.error('Gagal menambahkan ke keranjang'),
       },
     );
@@ -88,6 +88,7 @@ export default function Show({
       <Head title={book.title} />
 
       <PublicNavbar />
+      <SessionFlashWatcher />
 
       <main className="flex-1">
         <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">

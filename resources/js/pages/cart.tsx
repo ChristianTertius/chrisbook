@@ -7,6 +7,7 @@ import { Trash2 } from 'lucide-react';
 import type { CartItem } from '@/types/cart';
 import PublicNavbar from '@/components/public-navbar';
 import PublicFooter from '@/components/public-footer';
+import SessionFlashWatcher from '@/components/session-flash-watcher';
 
 const rupiah = (n: number) =>
   new Intl.NumberFormat('id-ID', {
@@ -25,7 +26,6 @@ export default function Cart({
   function hapus(item: CartItem) {
     router.delete(cartDestroy({ item: item.id }).url, {
       preserveScroll: true,
-      onSuccess: () => toast.success('Buku dihapus dari keranjang'),
       onError: () => toast.error('Gagal menghapus buku'),
     });
   }
@@ -35,6 +35,7 @@ export default function Cart({
       <div className="flex min-h-screen flex-col bg-background">
         <Head title="Keranjang" />
         <PublicNavbar />
+        <SessionFlashWatcher />
         <main className="flex-1">
           <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
             <h1 className="text-2xl font-semibold">Keranjang</h1>
@@ -55,6 +56,7 @@ export default function Cart({
     <div className="flex min-h-screen flex-col bg-background">
       <Head title="Keranjang" />
       <PublicNavbar />
+      <SessionFlashWatcher />
       <main className="flex-1">
         <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
           <h1 className="text-2xl font-semibold">Keranjang</h1>
