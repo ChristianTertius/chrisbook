@@ -22,6 +22,11 @@ class Cart extends Model
 
     public function subtotal(): int
     {
-        return $this->items->sum(fn ($item) => $item->price * $item->qty);
+        return $this->items->sum(fn($item) => $item->price * $item->qty);
     }
+    //
+    // public function total(): int
+    // {
+    //     return $this->items()->sum(fn(CartItem $item) => $item->book->price);
+    // }
 }

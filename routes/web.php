@@ -21,6 +21,8 @@ Route::get('/books/{book}', [BookController::class, 'show']);
 Route::middleware('auth')->group(function () {
     Route::get('/cart', [CartController::class, 'index']);
     Route::post('/cart', [CartController::class, 'store']);
+    Route::delete('/cart/{item}', [CartController::class, 'destroy']);
+
     Route::post('/checkout', [CheckoutController::class, 'store']);
     Route::get('/orders', [OrderController::class, 'index']);
     Route::get('/orders/{order}', [OrderController::class, 'show']);
