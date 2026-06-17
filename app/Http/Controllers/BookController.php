@@ -14,11 +14,11 @@ class BookController extends Controller
         $books = Book::query()
             ->available()
             ->with('category')
-            ->when($request->search, fn ($q, $s) => $q->where(fn ($q) => $q->where('title', 'like', "%{$s}%")->orWhere('author', 'like', "%{$s}%")))
-            ->when($request->category, fn ($q, $c) => $q->whereHas('category', fn ($q) => $q->where('slug', $c)))
-            ->when($request->condition, fn ($q, $c) => $q->where('condition', $c))
-            ->when($request->min_price, fn ($q, $p) => $q->where('price', '>=', $p))
-            ->when($request->max_price, fn ($q, $p) => $q->where('price', '<=', $p))
+            ->when($request->search, fn($q, $s) => $q->where(fn($q) => $q->where('title', 'like', "%{$s}%")->orWhere('author', 'like', "%{$s}%")))
+            ->when($request->category, fn($q, $c) => $q->whereHas('category', fn($q) => $q->where('slug', $c)))
+            ->when($request->condition, fn($q, $c) => $q->where('condition', $c))
+            ->when($request->min_price, fn($q, $p) => $q->where('price', '>=', $p))
+            ->when($request->max_price, fn($q, $p) => $q->where('price', '<=', $p))
             ->latest()
             ->paginate(12)
             ->withQueryString();
@@ -32,14 +32,20 @@ class BookController extends Controller
 
     public function show(Book $book)
     {
-        $book->load('images', 'category');
+        $book->load(['images', 'category']);
 
-        return Inertia::render('Book', [
+        $related = Book::query()
+            ->where('status', 'available')
+            ->where('id', '!=', $book->id)
+            ->when($book->category_id, fn($q) =>
+            $q->where('category_id', $book->category_id))
+            ->latest()
+            ->take(4)
+            ->get();
+
+        return Inertia::render('books/show', [
             'book' => $book,
-            'related' => Book::available()
-                ->where('category_id', $book->category_id)
-                ->where('id', '!=', $book->id)
-                ->limit(4),
+            'related' => $related
         ]);
     }
 }

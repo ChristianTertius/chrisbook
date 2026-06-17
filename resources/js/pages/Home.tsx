@@ -1,9 +1,10 @@
-import { Head, Link, usePage, router } from '@inertiajs/react';
-import { BookOpen, LogOut, Search, ShoppingCart } from 'lucide-react';
+import { Head, Link } from '@inertiajs/react';
+import { BookOpen, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { login, logout, register } from '@/routes';
+import PublicNavbar from '@/components/public-navbar';
+import PublicFooter from '@/components/public-footer';
 
 type Book = {
     id: number;
@@ -54,61 +55,12 @@ const conditionLabels: Record<string, string> = {
 const rupiah = (n: number) => 'Rp' + n.toLocaleString('id-ID');
 
 export default function Home({ books, categories, filters }: Props) {
-    const { auth } = usePage().props;
-
     return (
         <>
             <Head title="ChrisBook - Toko Buku Online" />
 
             <div className="flex min-h-screen flex-col bg-background">
-                {/* Navbar */}
-                <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-                    <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-                        <Link
-                            href="/"
-                            className="flex items-center gap-2 text-xl font-bold"
-                        >
-                            <BookOpen className="h-6 w-6 text-primary" />
-                            ChrisBook
-                        </Link>
-
-                        <nav className="flex items-center gap-4">
-                            {auth.user ? (
-                                <>
-                                    <Link href="/cart" className="relative">
-                                        <ShoppingCart className="h-5 w-5 text-muted-foreground hover:text-foreground" />
-                                    </Link>
-                                    <Link
-                                        href={auth.user.role === 'admin' ? '/admin/dashboard' : '/'}
-                                    >
-                                        <Button variant="outline" size="sm">
-                                            {auth.user.role === 'admin' ? 'Dashboard' : 'My Orders'}
-                                        </Button>
-                                    </Link>
-                                    <button
-                                        type="button"
-                                        onClick={() => router.post(logout.url())}
-                                        className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
-                                    >
-                                        <LogOut className="h-4 w-4" />
-                                        Logout
-                                    </button>
-                                </>
-                            ) : (
-                                <>
-                                    <Link href={login()}>
-                                        <Button variant="ghost" size="sm">
-                                            Log in
-                                        </Button>
-                                    </Link>
-                                    <Link href={register()}>
-                                        <Button size="sm">Register</Button>
-                                    </Link>
-                                </>
-                            )}
-                        </nav>
-                    </div>
-                </header>
+                <PublicNavbar />
 
                 <main className="flex-1">
                     {/* Hero */}
@@ -154,8 +106,8 @@ export default function Home({ books, categories, filters }: Props) {
                                 <Link
                                     href="/"
                                     className={`inline-block rounded-full px-4 py-1.5 text-sm transition-colors ${!filters.category
-                                        ? 'bg-primary text-primary-foreground'
-                                        : 'bg-muted hover:bg-muted/80'
+                                            ? 'bg-primary text-primary-foreground'
+                                            : 'bg-muted hover:bg-muted/80'
                                         }`}
                                 >
                                     Semua
@@ -165,8 +117,8 @@ export default function Home({ books, categories, filters }: Props) {
                                         key={cat.id}
                                         href={`/?category=${cat.slug}`}
                                         className={`inline-block rounded-full px-4 py-1.5 text-sm transition-colors ${filters.category === cat.slug
-                                            ? 'bg-primary text-primary-foreground'
-                                            : 'bg-muted hover:bg-muted/80'
+                                                ? 'bg-primary text-primary-foreground'
+                                                : 'bg-muted hover:bg-muted/80'
                                             }`}
                                     >
                                         {cat.name}
@@ -211,7 +163,7 @@ export default function Home({ books, categories, filters }: Props) {
                                             <div className="aspect-[3/4] overflow-hidden rounded-t-lg bg-muted">
                                                 {book.cover_image ? (
                                                     <img
-                                                        src={`storage/${book.cover_image}`}
+                                                        src={`/storage/${book.cover_image}`}
                                                         alt={book.title}
                                                         className="h-full w-full object-cover transition-transform group-hover:scale-105"
                                                     />
@@ -254,9 +206,9 @@ export default function Home({ books, categories, filters }: Props) {
                                         <Link
                                             key={i}
                                             href={link.url || '#'}
-                                            className={`inline-flex h-9 w-9 items-center justify-center rounded-md text-sm transition-colors ${link.active
-                                                ? 'bg-primary text-primary-foreground'
-                                                : 'hover:bg-muted'
+                                            className={`inline-flex min-w-9 h-9 items-center justify-center rounded-md px-2 text-sm transition-colors ${link.active
+                                                    ? 'bg-primary text-primary-foreground'
+                                                    : 'hover:bg-muted'
                                                 } ${!link.url ? 'pointer-events-none text-muted-foreground/50' : ''}`}
                                             dangerouslySetInnerHTML={{ __html: link.label }}
                                         />
@@ -267,21 +219,7 @@ export default function Home({ books, categories, filters }: Props) {
                     </section>
                 </main>
 
-                {/* Footer */}
-                <footer className="border-t bg-muted/50">
-                    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-                        <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                <BookOpen className="h-4 w-4" />
-                                ChrisBook
-                            </div>
-                            <p className="text-sm text-muted-foreground">
-                                &copy; {new Date().getFullYear()} ChrisBook. All rights
-                                reserved.
-                            </p>
-                        </div>
-                    </div>
-                </footer>
+                <PublicFooter />
             </div>
         </>
     );

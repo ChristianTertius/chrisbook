@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Route;
 
 // Publik
 Route::get('/', [BookController::class, 'index'])->name('home');
-Route::get('/books/{slug}', [BookController::class, 'show']);
+Route::get('/books/{book}', [BookController::class, 'show']);
 
 // Customer (auth)
 Route::middleware('auth')->group(function () {
@@ -47,4 +47,4 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 
     Route::resource('categories', CategoryController::class)->only(['index', 'store', 'update', 'destroy']);
 });
-require __DIR__.'/settings.php';
+require __DIR__ . '/settings.php';
