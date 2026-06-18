@@ -23,7 +23,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/cart', [CartController::class, 'store']);
     Route::delete('/cart/{item}', [CartController::class, 'destroy']);
 
-    Route::post('/checkout', [CheckoutController::class, 'store']);
+    Route::get('/checkout', [CheckoutController::class, 'create'])->name('checkout');
+    Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
     Route::get('/orders', [OrderController::class, 'index']);
     Route::get('/orders/{order}', [OrderController::class, 'show']);
 

@@ -1,96 +1,157 @@
-// resources/js/Pages/Checkout.tsx (tambahan alamat + ongkir, cuplikan)
-import type { FormEvent } from 'react'
-import { useState } from 'react'
-import { router, useForm } from '@inertiajs/react'
+import { useMemo, useState } from 'react'
+import { Head, router, usePage } from '@inertiajs/react'
 import { store as checkoutStore } from '@/actions/App/Http/Controllers/CheckoutController'
+import { Button } from '@/components/ui/button'
+import { Label } from '@/components/ui/label'
+import {
+    Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from '@/components/ui/select'
+import { toast } from 'sonner'
+import type { CheckoutItem, ShippingOption } from '@/types/checkout'
+import type { Address } from '@/types/address'
+import type { SharedData } from '@/types'
 
-type CartItem = { id: number; title: string; price: number; qty: number }
-type Address = { id: number; recipient: string; city: string; city_id: string; full_address: string; is_default: boolean }
-type ShippingOption = { name: string; code: string; service: string; cost: number; etd: string }
+const rupiah = (n: number) =>
+    new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n)
 
-type CheckoutProps = {
-    items: CartItem[]
-    subtotal: number
-    addresses: Address[]
-    // ongkir dihitung di server (CheckoutController@create) lalu dikirim sebagai prop
-    shippingOptions: ShippingOption[]
+declare global {
+    interface Window {
+        snap?: { pay: (token: string, opts?: Record<string, unknown>) => void }
+    }
 }
 
-export default function Checkout({ items, subtotal, addresses, shippingOptions }: CheckoutProps) {
-    const def = addresses.find(a => a.is_default) ?? addresses[0]
-    const { data, setData, post, processing } = useForm({
-        address_id: def?.id ?? 0,
-        courier: '',
-        shipping_cost: 0,
-    })
-    const [loadingCost, setLoadingCost] = useState(false)
+export default function Checkout({
+    items, subtotal, addresses, shippingOptions = [],
+}: {
+    items: CheckoutItem[]
+    subtotal: number
+    addresses: Address[]
+    shippingOptions?: ShippingOption[]
+}) {
+    const { props } = usePage<SharedData>()
+    const [addressId, setAddressId] = useState<string>(addresses[0]?.id?.toString() ?? '')
+    const [shipKey, setShipKey] = useState<string>('')
+    const [processing, setProcessing] = useState(false)
 
-    const total = subtotal + data.shipping_cost
+    const selectedShipping = useMemo(
+        () => shippingOptions.find((o) => `${o.courier}-${o.service}` === shipKey),
+        [shipKey, shippingOptions],
+    )
+    const shippingCost = selectedShipping?.cost ?? 0
+    const total = subtotal + shippingCost
 
-    // Inertia partial reload: minta ulang HANYA prop "shippingOptions" dari server.
-    // Tetap dalam paradigma monolith — nggak ada JSON API / axios terpisah.
-    function fetchCost(courier: string) {
-        setData('courier', courier)
-        setData('shipping_cost', 0)
-        router.reload({
-            only: ['shippingOptions'],
-            data: { address_id: data.address_id, courier },
-            onStart: () => setLoadingCost(true),
-            onFinish: () => setLoadingCost(false),
+    function bayar() {
+        if (!addressId) return toast.error('Pilih alamat pengiriman dulu.')
+        if (!selectedShipping) return toast.error('Pilih layanan pengiriman dulu.')
+
+        setProcessing(true)
+        router.post(checkoutStore().url, {
+            address_id: Number(addressId),
+            courier: selectedShipping.courier,
+            shipping_service: selectedShipping.service,
+            shipping_cost: selectedShipping.cost,
+        }, {
+            preserveScroll: true,
+            onSuccess: () => {
+                const token = (props as any).flash?.snap_token
+                if (token && window.snap) {
+                    window.snap.pay(token, {
+                        onSuccess: () => router.visit('/orders'),
+                        onPending: () => router.visit('/orders'),
+                        onError: () => toast.error('Pembayaran gagal.'),
+                        onClose: () => toast('Kamu menutup popup sebelum membayar.'),
+                    })
+                }
+            },
+            onError: () => toast.error('Checkout gagal. Coba lagi.'),
+            onFinish: () => setProcessing(false),
         })
     }
 
-    function submit(e: FormEvent) {
-        e.preventDefault()
-        // handler Snap (onSuccess) sama seperti Section 19d
-        post(checkoutStore().url, { preserveScroll: true })
-    }
-
     return (
-        <form onSubmit={submit} className="space-y-4">
-            <h1 className="text-xl font-bold">Checkout ({items.length} buku)</h1>
+        <div className="p-5">
+            <Head title="Checkout" />
+            <h1 className="text-2xl font-semibold">Checkout</h1>
 
-            <select value={data.address_id} onChange={e => setData('address_id', Number(e.target.value))}
-                className="w-full rounded border px-3 py-2">
-                {addresses.map(a => (
-                    <option key={a.id} value={a.id}>
-                        {a.recipient} — {a.city} {a.is_default ? '(default)' : ''}
-                    </option>
-                ))}
-            </select>
+            <div className="mt-6 grid gap-6 lg:grid-cols-3">
+                <div className="flex flex-col gap-6 lg:col-span-2">
+                    {/* Alamat */}
+                    <section className="rounded-lg border p-4">
+                        <Label className="mb-2 block font-medium">Alamat Pengiriman</Label>
+                        {addresses.length === 0 ? (
+                            <p className="text-sm text-muted-foreground">
+                                Belum ada alamat. Tambah alamat dulu di menu Alamat.
+                            </p>
+                        ) : (
+                            <Select value={addressId} onValueChange={setAddressId}>
+                                <SelectTrigger><SelectValue placeholder="Pilih alamat" /></SelectTrigger>
+                                <SelectContent>
+                                    {addresses.map((a) => (
+                                        <SelectItem key={a.id} value={a.id.toString()}>
+                                            {a.recipient_name} — {a.full_address}, {a.city_name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        )}
+                    </section>
 
-            <select value={data.courier} onChange={e => fetchCost(e.target.value)}
-                className="w-full rounded border px-3 py-2">
-                <option value="">Pilih kurir</option>
-                <option value="jne">JNE</option>
-                <option value="jnt">J&T</option>
-                <option value="sicepat">SiCepat</option>
-            </select>
+                    {/* Pengiriman */}
+                    <section className="rounded-lg border p-4">
+                        <Label className="mb-2 block font-medium">Layanan Pengiriman</Label>
+                        <Select value={shipKey} onValueChange={setShipKey}>
+                            <SelectTrigger><SelectValue placeholder="Pilih kurir & layanan" /></SelectTrigger>
+                            <SelectContent>
+                                {shippingOptions.map((o) => (
+                                    <SelectItem key={`${o.courier}-${o.service}`} value={`${o.courier}-${o.service}`}>
+                                        {o.courier.toUpperCase()} {o.service} — {rupiah(o.cost)} {o.etd ? `(${o.etd})` : ''}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </section>
 
-            {loadingCost && <p className="text-sm text-gray-500">Menghitung ongkir…</p>}
-            <ul className="space-y-1">
-                {shippingOptions.map(o => (
-                    <li key={o.service}>
-                        <label className="flex gap-2 text-sm">
-                            <input type="radio" name="service"
-                                checked={data.shipping_cost === o.cost}
-                                onChange={() => setData('shipping_cost', o.cost)} />
-                            {o.service} — Rp{o.cost.toLocaleString('id-ID')} ({o.etd} hari)
-                        </label>
-                    </li>
-                ))}
-            </ul>
+                    {/* Daftar buku */}
+                    <section className="rounded-lg border p-4">
+                        <Label className="mb-2 block font-medium">Buku ({items.length})</Label>
+                        <div className="flex flex-col gap-3">
+                            {items.map((b) => (
+                                <div key={b.id} className="flex items-center gap-3">
+                                    <div className="h-14 w-11 shrink-0 overflow-hidden rounded bg-muted">
+                                        <img
+                                            src={b.cover_image ? `/storage/${b.cover_image}` : '/images/book-placeholder.png'}
+                                            alt={b.title}
+                                            className="h-full w-full object-cover"
+                                        />
+                                    </div>
+                                    <span className="flex-1 text-sm">{b.title}</span>
+                                    <span className="text-sm font-medium">{rupiah(b.price)}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </section>
+                </div>
 
-            <div className="space-y-1 text-sm">
-                <p>Subtotal: Rp{subtotal.toLocaleString('id-ID')}</p>
-                <p>Ongkir: Rp{data.shipping_cost.toLocaleString('id-ID')}</p>
-                <p className="font-bold">Total: Rp{total.toLocaleString('id-ID')}</p>
+                {/* Ringkasan */}
+                <div className="h-fit rounded-lg border p-4">
+                    <h2 className="font-semibold">Ringkasan Pembayaran</h2>
+                    <div className="mt-3 flex justify-between text-sm">
+                        <span className="text-muted-foreground">Subtotal</span>
+                        <span>{rupiah(subtotal)}</span>
+                    </div>
+                    <div className="mt-2 flex justify-between text-sm">
+                        <span className="text-muted-foreground">Ongkir</span>
+                        <span>{rupiah(shippingCost)}</span>
+                    </div>
+                    <div className="mt-3 flex justify-between border-t pt-3 font-semibold">
+                        <span>Total</span>
+                        <span className="text-primary">{rupiah(total)}</span>
+                    </div>
+                    <Button className="mt-4 w-full" size="lg" disabled={processing} onClick={bayar}>
+                        {processing ? 'Memproses...' : 'Bayar Sekarang'}
+                    </Button>
+                </div>
             </div>
-
-            <button type="submit" disabled={processing || !data.shipping_cost}
-                className="rounded bg-indigo-600 px-4 py-2 text-white">
-                Bayar Sekarang
-            </button>
-        </form>
+        </div>
     )
 }
