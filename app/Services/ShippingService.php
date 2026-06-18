@@ -11,7 +11,9 @@ class ShippingService
     public const DEFAULT_WEIGHT_PER_ITEM = 1000;
 
     private string $baseUrl;
+
     private string $apiKey;
+
     private string $originCityId;
 
     public function __construct()
@@ -27,17 +29,15 @@ class ShippingService
     }
 
     /** Daftar provinsi (di-cache, jarang berubah). */
-    public function provinces(): array
+    public function provinces()
     {
-        return Cache::remember('ongkir.provinces', now()->addDay(), fn() =>
-        $this->client()->get('/destination/province')->json('data', []));
+        return Cache::remember('ongkir.provinces', now()->addDay(), fn () => $this->client()->get('/destination/province')->json('data', []));
     }
 
     /** Daftar kota per provinsi. */
     public function cities(string $provinceId): array
     {
-        return Cache::remember("ongkir.cities.{$provinceId}", now()->addDay(), fn() =>
-        $this->client()->get('/destination/city', ['province_id' => $provinceId])->json('data', []));
+        return Cache::remember("ongkir.cities.{$provinceId}", now()->addDay(), fn () => $this->client()->get('/destination/city', ['province_id' => $provinceId])->json('data', []));
     }
 
     /** Hitung ongkir; balikin daftar layanan + biaya per kurir. */

@@ -29,7 +29,7 @@ class DashboardController extends Controller
     // kartu ringkasan kpi
     private function cards(): array
     {
-        $paid = fn() => Order::whereIn('status', self::PAID_STATUSES);
+        $paid = fn () => Order::whereIn('status', self::PAID_STATUSES);
 
         return [
             'revenue_this_month' => $paid()
@@ -70,7 +70,7 @@ class DashboardController extends Controller
             ->select('title')
             ->selectRaw('SUM(qty) as sold_qty')
             ->selectRaw('SUM(qty * price) as revenue')
-            ->whereHas('order', fn($q) => $q->whereIn('status', self::PAID_STATUSES))
+            ->whereHas('order', fn ($q) => $q->whereIn('status', self::PAID_STATUSES))
             ->groupBy('title')
             ->orderByDesc('sold_qty')
             ->limit(5)

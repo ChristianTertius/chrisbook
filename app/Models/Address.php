@@ -9,14 +9,14 @@ class Address extends Model
 {
     protected $fillable = [
         'user_id',
-        'recipient',
-        'city_id',
-        'province_id',
+        'recipient_name',
         'phone',
-        'province',
-        'city',
-        'postal_code',
         'full_address',
+        'province_id',
+        'province_name',
+        'city_id',
+        'city_name',
+        'postal_code',
         'is_default',
     ];
 

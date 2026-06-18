@@ -30,6 +30,7 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('addresses', AddressController::class)
         ->only(['index', 'store', 'update', 'destroy']);
+
     Route::post('/addresses/{address}/default', [AddressController::class, 'setDefault'])
         ->name('addresses.default');
 
@@ -50,4 +51,4 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 
     Route::resource('categories', CategoryController::class)->only(['index', 'store', 'update', 'destroy']);
 });
-require __DIR__ . '/settings.php';
+require __DIR__.'/settings.php';

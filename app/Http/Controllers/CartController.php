@@ -19,7 +19,7 @@ class CartController extends Controller
         $cart = Auth::user()->cart()->with('items.book.images')->first();
 
         $items = $cart
-            ? $cart->items->map(fn(CartItem $item) => [
+            ? $cart->items->map(fn (CartItem $item) => [
                 'id' => $item->id,
                 'book' => [
                     'id' => $item->book->id,

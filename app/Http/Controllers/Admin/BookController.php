@@ -21,7 +21,7 @@ class BookController extends Controller
     {
         return Inertia::render('admin/books/index', [
             'books' => Book::with(['category', 'images'])
-                ->when($request->search, fn($q, $s) => $q->where(fn($q) => $q->where('title', 'like', "%{$s}%")
+                ->when($request->search, fn ($q, $s) => $q->where(fn ($q) => $q->where('title', 'like', "%{$s}%")
                     ->orWhere('author', 'like', "%{$s}%")))
                 ->latest()
                 ->paginate(15)
@@ -155,8 +155,8 @@ class BookController extends Controller
         $slug = $base;
         $n = 1;
 
-        while (Book::where('slug', $slug)->when($ignoreId, fn($q) => $q->where('id', '!=', $ignoreId))->exists()) {
-            $slug = $base . '-' . $n++;
+        while (Book::where('slug', $slug)->when($ignoreId, fn ($q) => $q->where('id', '!=', $ignoreId))->exists()) {
+            $slug = $base.'-'.$n++;
         }
 
         return $slug;

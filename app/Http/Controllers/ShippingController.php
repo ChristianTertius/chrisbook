@@ -14,11 +14,13 @@ class ShippingController extends Controller
         return response()->json($this->shipping->provinces());
     }
 
-    public function cities(Request $request)
+    public function cities(Request $request, ShippingService $shipping)
     {
-        $request->validate(['province_id' => ['required']]);
+        $request->validate(['province_id' => ['required', 'string']]);
 
-        return response()->json($this->shipping->cities($request->province_id));
+        return response()->json(
+            $shipping->cities($request->string('province_id')) // [{id, name}]
+        );
     }
 
     public function cost(Request $request)

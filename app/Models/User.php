@@ -57,11 +57,6 @@ class User extends Authenticatable implements PasskeyUser
         return $this->role === 'admin';
     }
 
-    public function addresses(): HasMany
-    {
-        return $this->hasMany(Address::class);
-    }
-
     public function orders(): HasMany
     {
         return $this->hasMany(Order::class);
@@ -70,5 +65,15 @@ class User extends Authenticatable implements PasskeyUser
     public function cart(): HasOne
     {
         return $this->hasOne(Cart::class);
+    }
+
+    public function addresses(): HasMany
+    {
+        return $this->hasMany(Address::class);
+    }
+
+    public function defaultAddress(): ?Address
+    {
+        return $this->addresses()->where('is_default', true)->first() ?? $this->addresses()->latest()->first();
     }
 }
