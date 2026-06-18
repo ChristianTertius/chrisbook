@@ -40,9 +40,9 @@ return [
         'is_production' => env('MIDTRANS_IS_PRODUCTION', false),
     ],
     'rajaongkir' => [
-        'base_url' => env('RAJAONGKIR_BASE_URL', 'https://rajaongkir.komerce.id/api/v1'),
-        'key' => env('RAJAONGKIR_KEY'),
-        'origin_city_id' => env('RAJAONGKIR_ORIGIN_CITY_ID'), // kota asal toko
+        'base_url' => env('RAJAONGKIR_BASE_URL'),
+        'key' => env('RAJAONGKIR_API_KEY'),
+        'origin_city_id' => env('RAJAONGKIR_ORIGIN_CITY_ID'),
     ],
 
 ];

@@ -33,4 +33,15 @@ class ShippingController extends Controller
 
         return response()->json($this->shipping->cost($data['destination_city_id'], $data['weight'], $data['courier']));
     }
+
+    // opsi ongkir sat checkout (berdasarkan alamat terpilih)
+    public function options(Request $request, ShippingService $shipping)
+    {
+        $data = $request->validate([
+            'city_id' => ['required', 'string'],
+            'weight' => ['required', 'integer', 'min:1'],
+        ]);
+
+        return response()->json($shipping->options($data['city_id'], $data['weight']));
+    }
 }
