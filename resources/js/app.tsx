@@ -9,35 +9,37 @@ import SettingsLayout from '@/layouts/settings/layout';
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
 createInertiaApp({
-  title: (title) => (title ? `${title} - ${appName}` : appName),
-  layout: (name) => {
-    switch (true) {
-      case name === 'welcome':
-      case name === 'Home':
-      case name.startsWith('books/'):
-        return null;
-      case name.startsWith('auth/'):
-        return AuthLayout;
-      case name.startsWith('cart'):
-        return null;
-      case name.startsWith('settings/'):
-        return [AppLayout, SettingsLayout];
-      default:
-        return AppLayout;
-    }
-  },
-  strictMode: true,
-  withApp(app) {
-    return (
-      <TooltipProvider delayDuration={0}>
-        {app}
-        <Toaster />
-      </TooltipProvider>
-    );
-  },
-  progress: {
-    color: '#4B5563',
-  },
+    title: (title) => (title ? `${title} - ${appName}` : appName),
+    layout: (name) => {
+        switch (true) {
+            case name === 'welcome':
+            case name === 'Home':
+            case name.startsWith('books/'):
+                return null;
+            case name.startsWith('auth/'):
+                return AuthLayout;
+            case name.startsWith('cart'):
+                return null;
+            case name.startsWith('checkout'):
+                return null;
+            case name.startsWith('settings/'):
+                return [AppLayout, SettingsLayout];
+            default:
+                return AppLayout;
+        }
+    },
+    strictMode: true,
+    withApp(app) {
+        return (
+            <TooltipProvider delayDuration={0}>
+                {app}
+                <Toaster />
+            </TooltipProvider>
+        );
+    },
+    progress: {
+        color: '#4B5563',
+    },
 });
 
 // This will set light / dark mode on load...
