@@ -38,6 +38,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/shipping/provinces', [ShippingController::class, 'provinces']);
     Route::get('/shipping/cities', [ShippingController::class, 'cities']);
     Route::post('/shipping/cost', [ShippingController::class, 'cost']);
+    Route::get('/shipping/options', [ShippingController::class, 'options']);
 });
 
 // Webhook Midtrans (tanpa CSRF, tanpa auth)

@@ -63,7 +63,7 @@ class CheckoutController extends Controller
 
         return Inertia::render('checkout', [
             'items' => $items->values(),
-            'subtotal' => $cart->total,
+            'subtotal' => $cart->subtotal(),
             'addresses' => Auth::user()->addresses()->get(),
             // berat total untuk estimasi ongkir
             'totalweight' => $cart->items->sum(fn ($i) => $i->book->weight ?? 500),
@@ -160,7 +160,7 @@ class CheckoutController extends Controller
             'address_id' => ['required', 'exists:addresses,id'],
             'courier' => ['required', 'string'],
             'shipping_service' => ['required', 'string'],
-            'shipping_cost' => ['require', 'integer', 'min:0'],
+            'shipping_cost' => ['required', 'integer', 'min:0'],
         ]);
 
         $cart = Auth::user()->cart()->with('items.book')->first();
@@ -184,7 +184,7 @@ class CheckoutController extends Controller
         ) ?? $data['shipping_cost'];
 
         $order = DB::transaction(function () use ($cart, $address, $data, $shippingCost) {
-            $subtotal = $cart->total();
+            $subtotal = $cart->subtotal();
             $order = Order::create([
                 'user_id' => Auth::id(),
                 'order_number' => 'INV-'.now()->format('YmHis').'-'.Auth::id(),

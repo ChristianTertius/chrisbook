@@ -36,7 +36,7 @@ class ShippingService
         return Cache::remember('ro.provinces', now()->addDays(30), function () {
             $res = $this->client()->get('/destination/province')->throw()->json();
 
-            return collect($res['data'] ?? [])->map(fn($p) => ['id' => (string) $p['id'], 'name' => $p['name']])->all();
+            return collect($res['data'] ?? [])->map(fn ($p) => ['id' => (string) $p['id'], 'name' => $p['name']])->all();
         });
     }
 
@@ -48,14 +48,14 @@ class ShippingService
             $res = $this->client()->get("/destination/city/{$provinceId}")->throw()->json();
 
             return collect($res['data'] ?? [])
-                ->map(fn($c) => ['id' => (string) $c['id'], 'name' => $c['name']])
+                ->map(fn ($c) => ['id' => (string) $c['id'], 'name' => $c['name']])
                 ->all();
         });
     }
 
     public function options(string $destinationCiyId, int $weight): array
     {
-        $res = $this->client()->asFForm()->post('/calculate/district/domestic-cost', [
+        $res = $this->client()->asForm()->post('/calculate/district/domestic-cost', [
             'origin' => config('services.rajaongkir.origin_city_id'),
             'destination' => $destinationCiyId,
             'weight' => max($weight, 1),
@@ -63,21 +63,20 @@ class ShippingService
         ])->throw()->json();
 
         return collect($res['data'] ?? [])
-            ->map(fn($o) => [
-                'courier'     => strtolower($o['code'] ?? $o['courier'] ?? ''),
-                'service'     => $o['service'] ?? '',
+            ->map(fn ($o) => [
+                'courier' => strtolower($o['code'] ?? $o['courier'] ?? ''),
+                'service' => $o['service'] ?? '',
                 'description' => $o['description'] ?? '',
-                'cost'        => (int) ($o['cost'] ?? 0),
-                'etd'         => $o['etd'] ?? null,
+                'cost' => (int) ($o['cost'] ?? 0),
+                'etd' => $o['etd'] ?? null,
             ])
             ->all();
     }
-
 
     /** Hitung ongkir; balikin daftar layanan + biaya per kurir. */
     public function cost(string $destinationCityId, int $weight, string $courier, string $service): ?int
     {
         return collect($this->options($destinationCityId, $weight))
-            ->first(fn($o) => $o['courier'] === strtolower($courier) && $o['service'] === $service)['cost'] ?? null;
+            ->first(fn ($o) => $o['courier'] === strtolower($courier) && $o['service'] === $service)['cost'] ?? null;
     }
 }
