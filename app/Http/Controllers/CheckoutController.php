@@ -53,7 +53,7 @@ class CheckoutController extends Controller
             return redirect()->route('cart.index')->with('error', 'Keranjang masih kosong');
         }
 
-        $items = $cart->items->map(fn ($item) => [
+        $items = $cart->items->map(fn($item) => [
             'id' => $item->book->id,
             'title' => $item->book->title,
             'price' => $item->book->price,
@@ -66,7 +66,7 @@ class CheckoutController extends Controller
             'subtotal' => $cart->subtotal(),
             'addresses' => Auth::user()->addresses()->get(),
             'provinces' => $shipping->provinces() ?? [],
-            'totalweight' => $cart->items->sum(fn ($i) => $i->book->weight ?? 500),
+            'totalweight' => $cart->items->sum(fn($i) => $i->book->weight ?? 500),
         ]);
     }
 
@@ -169,8 +169,8 @@ class CheckoutController extends Controller
         // pastikan alamat milik user
         $address = Auth::user()->addresses()->findOrFail($data['address_id']);
 
-        // validsari ulang: semua buku masih tersedia
-        $unavailable = $cart->item->filter(fn ($i) => $i->book->status !== 'available');
+        // validasi ulang: semua buku masih tersedia
+        $unavailable = $cart->items->filter(fn($i) => $i->book->status !== 'available');
         if ($unavailable->isNotEmpty()) {
             return back()->with('error', 'Beberapa buku sudah terjual. Pastikan kembali Keranjang');
         }
@@ -178,7 +178,7 @@ class CheckoutController extends Controller
         // hitung ulang ongkri di server agar tidak di manipulasi
         $shippingCost = $shipping->cost(
             destinationCityId: $address->city_id,
-            weight: $cart->items->sum(fn ($i) => $i->book->weight ?? 500),
+            weight: $cart->items->sum(fn($i) => $i->book->weight ?? 500),
             courier: $data['courier'],
             service: $data['shipping_service']
         ) ?? $data['shipping_cost'];
@@ -187,7 +187,7 @@ class CheckoutController extends Controller
             $subtotal = $cart->subtotal();
             $order = Order::create([
                 'user_id' => Auth::id(),
-                'order_number' => 'INV-'.now()->format('YmHis').'-'.Auth::id(),
+                'order_number' => 'INV-' . now()->format('YmHis') . '-' . Auth::id(),
                 'status' => 'pending',
                 'subtotal' => $subtotal,
                 'total' => $subtotal + $shippingCost,
