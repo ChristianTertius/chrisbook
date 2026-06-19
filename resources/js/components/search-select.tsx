@@ -60,27 +60,29 @@ export default function SearchSelect({
           <CommandList>
             <CommandEmpty>{notFoundText}</CommandEmpty>
             <CommandGroup>
-              {options.map((opt) => (
-                <CommandItem
-                  key={opt.value}
-                  value={`${opt.label} ${opt.value}`}
-                  onSelect={(currentValue) => {
-                    const found = options.find(
-                      (o) => `${o.label} ${o.value}` === currentValue,
-                    );
-                    onValueChange(found ? found.value : '');
-                    setOpen(false);
-                  }}
-                >
-                  <Check
-                    className={cn(
-                      'mr-2 h-4 w-4',
-                      value === opt.value ? 'opacity-100' : 'opacity-0',
-                    )}
-                  />
-                  {opt.label}
-                </CommandItem>
-              ))}
+              {[...options]
+                .sort((a, b) => a.label.localeCompare(b.label))
+                .map((opt) => (
+                  <CommandItem
+                    key={opt.value}
+                    value={`${opt.label} ${opt.value}`}
+                    onSelect={(currentValue) => {
+                      const found = options.find(
+                        (o) => `${o.label} ${o.value}` === currentValue,
+                      );
+                      onValueChange(found ? found.value : '');
+                      setOpen(false);
+                    }}
+                  >
+                    <Check
+                      className={cn(
+                        'mr-2 h-4 w-4',
+                        value === opt.value ? 'opacity-100' : 'opacity-0',
+                      )}
+                    />
+                    {opt.label}
+                  </CommandItem>
+                ))}
             </CommandGroup>
           </CommandList>
         </Command>
