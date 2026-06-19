@@ -30,14 +30,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { toast } from 'sonner';
+import SearchSelect from '@/components/search-select';
 import { Pencil, Trash2, Plus } from 'lucide-react';
 import type { Address, Region } from '@/types/address';
 import PublicNavbar from '@/components/public-navbar';
@@ -205,7 +199,11 @@ export default function AddressIndex({
                   {/* Provinsi */}
                   <div>
                     <Label>Provinsi</Label>
-                    <Select
+                    <SearchSelect
+                      options={provinces.map((p) => ({
+                        value: p.id,
+                        label: p.name,
+                      }))}
                       value={data.province_id}
                       onValueChange={(val) => {
                         const prov = provinces.find((p) => p.id === val);
@@ -214,27 +212,22 @@ export default function AddressIndex({
                           province_id: val,
                           province_name: prov?.name ?? '',
                           city_id: '',
-                          city_name: '', // reset kota
+                          city_name: '',
                         }));
                       }}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Pilih provinsi" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {provinces.map((p) => (
-                          <SelectItem key={p.id} value={p.id}>
-                            {p.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                      placeholder="Pilih provinsi"
+                      searchPlaceholder="Cari provinsi..."
+                    />
                   </div>
 
                   {/* Kota */}
                   <div>
                     <Label>Kota / Kabupaten</Label>
-                    <Select
+                    <SearchSelect
+                      options={cities.map((c) => ({
+                        value: c.id,
+                        label: c.name,
+                      }))}
                       value={data.city_id}
                       disabled={!data.province_id}
                       onValueChange={(val) => {
@@ -245,18 +238,9 @@ export default function AddressIndex({
                           city_name: city?.name ?? '',
                         }));
                       }}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Pilih kota" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {cities.map((c) => (
-                          <SelectItem key={c.id} value={c.id}>
-                            {c.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                      placeholder="Pilih kota"
+                      searchPlaceholder="Cari kota..."
+                    />
                   </div>
 
                   <div>

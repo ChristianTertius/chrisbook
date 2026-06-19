@@ -1,16 +1,17 @@
 export interface Address {
-    id: number
-    recipient_name: string
-    phone: string
-    full_address: string
-    province_id: string
-    province_name: string
-    city_id: string
-    postal_code?: string | null
-    is_default: boolean
+  id: number;
+  recipient_name: string;
+  phone: string;
+  full_address: string;
+  province_id: string;
+  province_name: string;
+  city_id: string;
+  city_name: string;
+  postal_code?: string | null;
+  is_default: boolean;
 }
 
 export interface Region {
-    id: string
-    name: string
+  id: string;
+  name: string;
 }

@@ -65,7 +65,7 @@ class CheckoutController extends Controller
             'items' => $items->values(),
             'subtotal' => $cart->subtotal(),
             'addresses' => Auth::user()->addresses()->get(),
-            // berat total untuk estimasi ongkir
+            'provinces' => $shipping->provinces() ?? [],
             'totalweight' => $cart->items->sum(fn ($i) => $i->book->weight ?? 500),
         ]);
     }

@@ -11,11 +11,13 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { toast } from 'sonner';
+import { Plus } from 'lucide-react';
 import type { CheckoutItem, ShippingOption } from '@/types/checkout';
-import type { Address } from '@/types/address';
+import type { Address, Region } from '@/types/address';
 import PublicNavbar from '@/components/public-navbar';
 import PublicFooter from '@/components/public-footer';
 import SessionFlashWatcher from '@/components/session-flash-watcher';
+import AddressFormDialog from '@/components/address-form-dialog';
 
 const rupiah = (n: number) =>
   new Intl.NumberFormat('id-ID', {
@@ -34,11 +36,13 @@ export default function Checkout({
   items,
   subtotal,
   addresses,
+  provinces = [],
   shippingOptions = [],
 }: {
   items: CheckoutItem[];
   subtotal: number;
   addresses: Address[];
+  provinces?: Region[];
   shippingOptions?: ShippingOption[];
 }) {
   const { props } = usePage();
@@ -46,6 +50,7 @@ export default function Checkout({
     addresses[0]?.id?.toString() ?? '',
   );
   const [shipKey, setShipKey] = useState<string>('');
+  const [addressDialogOpen, setAddressDialogOpen] = useState(false);
   const [localShippingOptions, setShippingOptions] =
     useState<ShippingOption[]>(shippingOptions);
   const [processing, setProcessing] = useState(false);
@@ -114,24 +119,36 @@ export default function Checkout({
                 <Label className="mb-2 block font-medium">
                   Alamat Pengiriman
                 </Label>
-                {addresses.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">
-                    Belum ada alamat. Tambah alamat dulu di menu Alamat.
-                  </p>
-                ) : (
-                  <Select value={addressId} onValueChange={setAddressId}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Pilih alamat" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {addresses.map((a) => (
-                        <SelectItem key={a.id} value={a.id.toString()}>
-                          {a.recipient_name} — {a.full_address}, {a.city_name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1">
+                    {addresses.length === 0 ? (
+                      <p className="text-sm text-muted-foreground">
+                        Belum ada alamat tersimpan.
+                      </p>
+                    ) : (
+                      <Select value={addressId} onValueChange={setAddressId}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Pilih alamat" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {addresses.map((a) => (
+                            <SelectItem key={a.id} value={a.id.toString()}>
+                              {a.recipient_name} — {a.full_address},{' '}
+                              {a.city_name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setAddressDialogOpen(true)}
+                  >
+                    <Plus className="mr-1 h-4 w-4" /> Tambah
+                  </Button>
+                </div>
               </section>
 
               {/* Pengiriman */}
@@ -214,6 +231,11 @@ export default function Checkout({
         </div>
       </main>
 
+      <AddressFormDialog
+        open={addressDialogOpen}
+        onOpenChange={setAddressDialogOpen}
+        provinces={provinces}
+      />
       <PublicFooter />
     </div>
   );
